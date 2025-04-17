@@ -12,8 +12,8 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())
 planeId = p.loadURDF("plane.urdf")
 
 start_pos = [0, 0, 0]
-# racecar_id = p.loadURDF("kuka_iiwa/model.urdf", start_pos)
-racecar_id = p.loadURDF("husky/husky.urdf", start_pos)
+racecar_id = p.loadURDF("kuka_iiwa/model.urdf", start_pos)
+# racecar_id = p.loadURDF("husky/husky.urdf", start_pos)
 
 # Set gravity
 p.setGravity(0, 0, -9.8)

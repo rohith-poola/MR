@@ -25,7 +25,7 @@ for i in range(num_joints):
     print(f"Joint {i}: {info[1].decode('utf-8')}")
 
 # Set joint positions (example pose)
-target_positions = [0.5, -1.5, 0.5, -1.0, 0.5, 1.2, -0.8]  # 7 DoF
+target_positions = [0.5, 1, 0.5, -1.0, 0.5, 1.2, -0.8]  # 7 DoF
 
 # Run simulation loop
 for _ in range(1000):
@@ -35,7 +35,7 @@ for _ in range(1000):
             jointIndex=joint_idx,
             controlMode=p.POSITION_CONTROL,
             targetPosition=target_positions[joint_idx],
-            force=300
+            force=500
         )
     p.stepSimulation()
-    time.sleep(1./1000.)
+    time.sleep(10./1000.)
