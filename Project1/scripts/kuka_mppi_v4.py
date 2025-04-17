@@ -13,11 +13,12 @@ import time
 p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -9.81)
-p.loadURDF("plane.urdf")
+plane_id = p.loadURDF("plane.urdf")
 robot_id = p.loadURDF("kuka_iiwa/model.urdf", [0, 0, 0], useFixedBase=True)
 num_joints = p.getNumJoints(robot_id)
 ee_link_index = num_joints - 1
-goal_pos = [0.4, -0.4, 0.3]
+goal_pos = [0.3, 0.3, 0.3]
+
 
 # === Visual goal marker ===
 goal_marker_vis_id = p.createVisualShape(
@@ -39,8 +40,15 @@ def get_joint_angles():
 
 def set_joint_angles(joint_angles):
     for i in range(num_joints):
-        p.setJointMotorControl2(robot_id, i, p.POSITION_CONTROL, targetPosition=joint_angles[i], force=300)
-
+        p.setJointMotorControl2(
+            bodyIndex=robot_id,
+            jointIndex=i,
+            controlMode=p.POSITION_CONTROL,
+            targetPosition=joint_angles[i],
+            force=250,
+            positionGain=0.08,  # joint aggression control
+            velocityGain=1.0
+        )
 def get_ee_position():
     return np.array(p.getLinkState(robot_id, ee_link_index)[0])
 
@@ -74,6 +82,10 @@ def get_nominal_sequence(start_pos, goal_pos, H):
         joint_angle_sequence.append(ik_solution[:num_joints])
 
     return np.array(joint_angle_sequence)
+
+# Set ground and EE friction
+p.changeDynamics(plane_id, -1, lateralFriction=1.0)
+p.changeDynamics(robot_id, ee_link_index, lateralFriction=1.0)
 
 # MPPI Hyperparameters
 N = 25            # Number of sampled sequences
@@ -109,10 +121,11 @@ while dist > 0.05:
             time.sleep(1. / 240.)
 
             ee_pos = get_ee_position()
+            print(f"Step {step_count+1} | Sequence {i + 1}/{N} | timestep {t} | EE Position: {ee_pos}")
             collision_penalty = 100.0 if is_self_collision() or is_ground_collision() else 0.0
             total_costs[i] += compute_cost(ee_pos, goal_pos, collision_penalty)
 
-        print(f'Step {step_count+1} | Sequence {i + 1}/{N} |')
+        # print(f'Step {step_count+1} | Sequence {i + 1}/{N} |')
 
     # === Step 5: Importance Sampling to get optimal sequence ===
     weights = np.exp(-1.0 / lambda_ * (total_costs - np.min(total_costs)))
