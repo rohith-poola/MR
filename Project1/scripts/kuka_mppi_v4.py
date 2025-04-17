@@ -1,6 +1,7 @@
 # ========= Description & Logs =================
 # Taken the optimal sequence from previous iteration as nominal sequence for the MPPI algorithm.
-# Working - 300 steps required to reach the goal position
+# Use inverse kinematics to kick start the MPPI algorithm.
+# Working - Corrected the MPPI formulation.
 # =======================================
 
 import numpy as np
@@ -58,62 +59,77 @@ def is_ground_collision():
 def compute_cost(ee_pos, goal, collision_penalty):
     return np.linalg.norm(ee_pos - goal) + collision_penalty
 
+def get_nominal_sequence(start_pos, goal_pos, H):
+    waypoints = np.linspace(start_pos, goal_pos, num=H + 1)[1:]  # shape (H, 3)
+    joint_angle_sequence = []
+
+    for pos in waypoints:
+        ik_solution = p.calculateInverseKinematics(
+            bodyUniqueId=robot_id,
+            endEffectorLinkIndex=ee_link_index,
+            targetPosition=pos,
+            maxNumIterations=200,
+            residualThreshold=1e-5
+        )
+        joint_angle_sequence.append(ik_solution[:num_joints])
+
+    return np.array(joint_angle_sequence)
 
 # MPPI Hyperparameters
-N = 100            # Number of sampled sequences
+N = 25            # Number of sampled sequences
 H = 10             # Time horizon
-sigma = 0.5       # Exploration noise std
+sigma = 0.05       # Exploration noise std
 lambda_ = 1.0      # Temperature for importance sampling
-nominal_sequence = np.zeros((H, num_joints))
+# nominal_sequence = np.zeros((H, num_joints))
+home = p.getLinkState(robot_id, ee_link_index)[0]
+nominal_sequence = get_nominal_sequence(start_pos=home, goal_pos=goal_pos, H=H)
 
-# === MPPI Control Loop ===
+# # === MPPI Control Loop ===
 dist = np.linalg.norm(get_ee_position() - goal_pos)
 step_count = 0
 
 while dist > 0.05:
     state_id = p.saveState()
 
-    # === Step 2: Sample N sequences (N, H, num_joints) around nominal ===
     noise = np.random.normal(0, sigma, size=(N, H, num_joints))
     samples = nominal_sequence[np.newaxis, :, :] + noise  # (N, H, num_joints)
-
     total_costs = np.zeros(N)
 
     # === Step 3: Evaluate all N sequences ===
-    for i in range(N):
+    for i, sequence in enumerate(samples):
         p.restoreState(state_id)
-        joint_angles = get_joint_angles()
-        sequence = samples[i]
+        for _ in range(int(2.0 * 50)):  # Assuming simulation runs at 240Hz
+            p.stepSimulation()
+            time.sleep(1. / 1000.)
 
         for t in range(H):
-            action = sequence[t]
-            joint_angles += action
+            joint_angles = sequence[t]
             set_joint_angles(joint_angles)
             p.stepSimulation()
+            time.sleep(1. / 240.)
 
             ee_pos = get_ee_position()
-            collision_penalty = 10.0 if is_self_collision() or is_ground_collision() else 0.0
+            collision_penalty = 100.0 if is_self_collision() or is_ground_collision() else 0.0
             total_costs[i] += compute_cost(ee_pos, goal_pos, collision_penalty)
+
+        print(f'Step {step_count+1} | Sequence {i + 1}/{N} |')
 
     # === Step 5: Importance Sampling to get optimal sequence ===
     weights = np.exp(-1.0 / lambda_ * (total_costs - np.min(total_costs)))
     weights /= np.sum(weights)
-    optimal_sequence = np.tensordot(weights, samples, axes=(0, 0))  # shape: (H, num_joints)
+    nominal_sequence = np.tensordot(weights, samples, axes=(0, 0))  # shape: (H, num_joints)
 
     # === Step 6: Apply first control command ===
-    first_action = optimal_sequence[0]
-    new_joint_angles = get_joint_angles() + first_action
+    # first_action = nominal_sequence[0]
+    new_joint_angles = nominal_sequence[0]
     set_joint_angles(new_joint_angles)
     p.stepSimulation()
     time.sleep(1. / 240.)
 
-    # === Step 7: Update nominal sequence ===
-    nominal_sequence = np.vstack([optimal_sequence[1:], np.zeros((1, num_joints))])
-
     # === Step 8: Print and update distance ===
     ee_pos = get_ee_position()
     dist = np.linalg.norm(ee_pos - goal_pos)
-    print(f"[{step_count}] EE: {ee_pos.round(3)} | Distance: {dist:.4f}")
+    print(f"{step_count}] EE: {ee_pos.round(3)} | Distance: {dist:.4f} \n Nominal Sequence: {nominal_sequence}")
     step_count += 1
 
     p.removeState(state_id)

@@ -1,3 +1,8 @@
+# ========= Description & Logs =================
+# Code to move the maninpulator from one point to another 
+# in straight line waypoints and using inverse kinematics.
+# =======================================
+
 import pybullet as p
 import pybullet_data
 import numpy as np
