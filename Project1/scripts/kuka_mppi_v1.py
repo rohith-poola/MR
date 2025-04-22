@@ -57,13 +57,15 @@ def is_self_collision():
 
 def is_ground_collision():
     contact_points = p.getContactPoints(bodyA=robot_id, bodyB=-1)
-    
+    if contact_points is None:
+        return 0
     return len(contact_points) > 0
 
 def compute_cost(ee_pos, goal, collision_penalty):
     dist_cost = np.linalg.norm(ee_pos - goal)
     return dist_cost + collision_penalty
 
+time.sleep(10)
 dist = np.linalg.norm(get_end_effector_position() - goal_pos)
 # Main MPPI loop
 while dist > 0.05:

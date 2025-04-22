@@ -42,7 +42,7 @@ box_id = p.createMultiBody(baseMass=box_mass, baseCollisionShapeIndex=box_col_id
 # box dynamics (friction + damping)
 p.changeDynamics(box_id, -1, lateralFriction=1.1, linearDamping=0.9, angularDamping=0.7, restitution=0.0)
 
-goal_pos = [0.4, 0.4, 0.22]
+goal_pos = [0.4, -0.4, 0.22]
 # === Visual goal marker ===
 goal_marker_vis_id = p.createVisualShape(
     shapeType=p.GEOM_SPHERE,
@@ -59,8 +59,8 @@ p.createMultiBody(
 # ======= Waypoints =======
 home = p.getLinkState(robot_id, ee_link_index)[0]
 waypoints = [
-    [0.4, -0.4, 0.1],   # near side of box
-    [0.4, 0.2, 0.1]   # push target
+    [0.4, 0.4, 0.1],   # near side of box
+    [0.4, -0.15, 0.1]   # push target
 ]
 
 # Generate smooth trajectory
@@ -68,6 +68,8 @@ array1 = generate_linear_waypoints(home, waypoints[0], num_points=10)
 array2 = generate_linear_waypoints(waypoints[0], waypoints[1], num_points=10)
 goal_array = np.concatenate((array1, array2), axis=0)
 
+p.stepSimulation()
+time.sleep(5)
 # === Move to each waypoint ===
 for goal_pos in goal_array:
     ik_solution = p.calculateInverseKinematics(

@@ -69,7 +69,7 @@ nominal_sequence = np.zeros((H, num_joints))
 # === MPPI Control Loop ===
 dist = np.linalg.norm(get_ee_position() - goal_pos)
 step_count = 0
-
+time.sleep(5)
 while dist > 0.05:
     state_id = p.saveState()
 

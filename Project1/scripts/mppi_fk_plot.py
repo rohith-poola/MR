@@ -5,7 +5,6 @@ import sys
 
 # === Path to CSV file ===
 csv_path = "/Users/rohith/MS/MR/Project1/data/mppi_fk_ee_2025-04-17_18-24-04.csv"
-
 save_dir = None
 # save_dir = "/Users/rohith/MS/MR/Project1/plots/fk_mppi_v1"
 

@@ -8,19 +8,33 @@ import time
 
 start_time = time.time()
 
+# === Helper Functions ===
+def generate_linear_waypoints(start, end, num_points=10):
+    start = np.array(start)
+    end = np.array(end)
+    waypoints = np.linspace(start, end, num=num_points)
+    return waypoints
+
+
 # === MPPI Parameters ===
 N = 25                # Number of sequences
-H = 10                # Time horizon
+H = 5                # Time horizon
 sigma = 0.05          # Noise level
 lambda_ = 1.0         # Temperature
 threshold_dist = 0.1
 max_iters = 50
 
 # === Goal Points ===
-goal_points = [
+goal_main_points = [
+    [0.2, -0.2, 0.8],
     [0.4, -0.4, 0.2],
     [0.4, 0.4, 0.2]
 ]
+
+# Generate smooth trajectory
+array1 = generate_linear_waypoints(goal_main_points[0], goal_main_points[1], num_points=4)
+array2 = generate_linear_waypoints(goal_main_points[1], goal_main_points[2], num_points=4)
+goal_points = np.concatenate((array1, array2[1:]), axis=0)
 
 # === Output Logging Setup ===
 output_dir = "/Users/rohith/MS/MR/Project1/data"
