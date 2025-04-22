@@ -35,9 +35,9 @@ This project implements a sampling-based Model Predictive Path Integral (MPPI) c
 <p><strong>Standard MPPI Rollouts:</strong></p>
 <table>
   <tr>
-    <td><img src="/Users/rohith/MS/MR/Project1/resources/gifs/test_mppi_main_v1.gif" width="300"/></td>
+    <td><img src="resources/gifs/test_mppi_main_v1.gif" width="300"/></td>
     <td style="width: 40px;"></td> <!-- Horizontal gap -->
-    <td><img src="/Users/rohith/MS/MR/Project1/resources/gifs/test_mppi_v2.gif" width="300"/></td>
+    <td><img src="resources/gifs/test_mppi_v2.gif" width="300"/></td>
   </tr>
 </table>
 
@@ -47,9 +47,9 @@ This project implements a sampling-based Model Predictive Path Integral (MPPI) c
 <p><strong>Cartesian MPPI Sampling Results:</strong></p>
 <table>
   <tr>
-    <td><img src="/Users/rohith/MS/MR/Project1/resources/gifs/test_mppi_main_v2.gif" width="300"/></td>
+    <td><img src="resources/gifs/test_mppi_main_v2.gif" width="300"/></td>
     <td style="width: 40px;"></td>
-    <td><img src="/Users/rohith/MS/MR/Project1/resources/gifs/test_mppi_v4.gif" width="300"/></td>
+    <td><img src="resources/gifs/test_mppi_v4.gif" width="300"/></td>
   </tr>
 </table>
 
@@ -59,7 +59,7 @@ This project implements a sampling-based Model Predictive Path Integral (MPPI) c
 <p><strong>MPPI with Zeros Initialization:</strong></p>
 <table>
   <tr>
-    <td><img src="/Users/rohith/MS/MR/Project1/resources/gifs/mppi_naive_v1.gif" width="300"/></td>
+    <td><img src="resources/gifs/mppi_naive_v1.gif" width="300"/></td>
     <td style="width: 40px;"></td>
   </tr>
 </table>
